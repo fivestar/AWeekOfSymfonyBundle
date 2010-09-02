@@ -4,6 +4,11 @@ namespace Bundle\AWeekOfSymfonyBundle\Renderer;
 
 use Bundle\AWeekOfSymfonyBundle\Model\Entry;
 
+/**
+ * Markdown renderer
+ *
+ * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
+ */
 class MarkdownRenderer
 {
     protected $formatter;

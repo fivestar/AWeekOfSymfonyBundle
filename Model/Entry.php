@@ -2,6 +2,11 @@
 
 namespace Bundle\AWeekOfSymfonyBundle\Model;
 
+/**
+ * Entry
+ *
+ * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
+ */
 class Entry
 {
     protected $uri;

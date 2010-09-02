@@ -2,6 +2,11 @@
 
 namespace Bundle\AWeekOfSymfonyBundle\Renderer;
 
+/**
+ * Markdown formatter
+ *
+ * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
+ */
 class MarkdownFormatter
 {
     public function header($text, $level = 3)

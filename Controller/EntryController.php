@@ -15,6 +15,11 @@ use Bundle\AWeekOfSymfonyBundle\Scraper\RecentlyEntriesScraper;
 use Bundle\AWeekOfSymfonyBundle\Scraper\EntryScraper;
 use Bundle\AWeekOfSymfonyBundle\Renderer\MarkdownRenderer;
 
+/**
+ * EntryController
+ *
+ * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
+ */
 class EntryController extends Controller
 {
     public function indexAction()
@@ -29,12 +34,12 @@ class EntryController extends Controller
             $entries[] = array(
                 'uri'     => $link->getUri(),
                 'content' => $link->getNode()->nodeValue,
-                'route'   => array(
+                'route'   => new SafeDecorator(array(
                     'year'  => $r[0],
                     'month' => $r[1],
                     'day'   => $r[2],
                     'slug'  => $r[3],
-                ),
+                )),
             );
         }
 

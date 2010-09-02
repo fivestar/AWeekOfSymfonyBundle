@@ -28,9 +28,9 @@
         </div>
     </div>
 
-	<div>
+	<div id="get_code">
 		<article>
-			<h2>Get source code<h2>
+			<h2>Get code<h2>
 
 			<p><a href="http://github.com/fivestar/AWeekOfSymfonyBundle">fivestar/AWeekOfSymfonyBundle</a></p>
 		</article>
