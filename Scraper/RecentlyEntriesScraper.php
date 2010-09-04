@@ -3,6 +3,7 @@
 namespace Bundle\AWeekOfSymfonyBundle\Scraper;
 
 use Goutte\Client;
+use Bundle\AWeekOfSymfonyBundle\Model\EntrySummary;
 
 /**
  * Recently entry scraper
@@ -23,6 +24,11 @@ class RecentlyEntriesScraper
 
         $links = $crawler->filter('#content1 h2 a')->links();
 
-        return $links;
+        $entries = array();
+        foreach ($links as $link) {
+            $entries[] = new EntrySummary($link->getUri(), $link->getNode()->nodeValue);
+        }
+
+        return $entries;
     }
 }

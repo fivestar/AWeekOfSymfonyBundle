@@ -8,9 +8,9 @@
 <ul>
 <?php foreach ($entries as $entry): ?>
     <li>
-        <a href="<?php echo $view['router']->generate('awos_show', $entry['route']) ?>"><?php echo $entry['content'] ?></a>
-        [<a href="<?php echo $view['router']->generate('awos_show', array_merge($entry['route'], array('_format' => 'markdown'))) ?>" target="_blank">Show as markdown</a>]
-        [<a href="<?php echo $entry['uri'] ?>" target="_blank">Read in the original</a>]
+        <a href="<?php echo $view['router']->generate('awos_show', $entry->getRawValue()->getParts()) ?>"><?php echo $entry->getContent() ?></a>
+        [<a href="<?php echo $view['router']->generate('awos_show', array_merge($entry->getRawValue()->getParts(), array('_format' => 'markdown'))) ?>" target="_blank">Show as markdown</a>]
+        [<a href="<?php echo $entry->getUri() ?>" target="_blank">Read in the original</a>]
     </li>
 <?php endforeach; ?>
 </li>

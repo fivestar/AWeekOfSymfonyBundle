@@ -13,7 +13,11 @@
     <div class="origin">
         <ul>
             <?php foreach ($entry->getMailinglist() as $uri => $title): ?>
-            <li><a href="<?php echo $uri ?>" target="_blank"><?php echo $title ?></a></li>
+            <li>
+                <a href="<?php echo $uri ?>" target="_blank"><?php echo $title ?></a>
+                <br>
+                <input type="text" name="" value="<?php echo $title ?>" size="120">
+            </li>
             <?php endforeach; ?>
         </ul>
     </div>
@@ -28,9 +32,11 @@
         <?php foreach ($highlights as $highlight): ?>
             <li>
                 <?php $counter = 0; foreach ($highlight->getCommits() as $rev => $uri): ?>
-                    <a href="<?php echo $uri ?>" target="_blank"><?php echo $rev ?></a><?php if ($counter): ?>, <?php endif; ?>
+                <a href="<?php echo $uri ?>" target="_blank"><?php echo $rev ?></a><?php if ($counter): ?>, <?php endif; ?>
                 <?php $counter++; endforeach; unset($counter); ?>
                 <?php echo $highlight->getContent() ?>
+                <br>
+                <textarea name="" rows="2" cols="80"><?php echo $highlight->getContent() ?></textarea>
             </li>
         <?php endforeach; ?>
         </ul>
