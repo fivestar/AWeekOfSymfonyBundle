@@ -28,13 +28,13 @@
         </div>
     </div>
 
-	<div id="get_code">
-		<article>
-			<h2>Get code<h2>
+    <div id="get-code">
+        <article>
+            <h2>Get code<h2>
 
-			<p><a href="http://github.com/fivestar/AWeekOfSymfonyBundle">fivestar/AWeekOfSymfonyBundle</a></p>
-		</article>
-	</div>
+            <p><a href="http://github.com/fivestar/AWeekOfSymfonyBundle">fivestar/AWeekOfSymfonyBundle</a></p>
+        </article>
+    </div>
 
     <footer>
         <div id="footer_contents">
