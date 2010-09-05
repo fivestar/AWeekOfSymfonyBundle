@@ -1,5 +1,7 @@
 <?php $view->extend('AWeekOfSymfonyBundle::layout') ?>
 
+<p><a href="<?php echo $view['router']->generate('awos') ?>">&lt;&lt; Back to list</a></p>
+
 <article>
 
 <h2><?php echo $entry->getSubject() ?></h2>
