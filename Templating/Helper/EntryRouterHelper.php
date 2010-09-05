@@ -6,6 +6,9 @@ use Symfony\Component\Templating\Helper\Helper;
 use Symfony\Component\Routing\Router;
 use Symfony\Component\OutputEscaper\Escaper;
 
+/**
+ * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
+ */
 class EntryRouterHelper extends Helper
 {
     protected $generator;

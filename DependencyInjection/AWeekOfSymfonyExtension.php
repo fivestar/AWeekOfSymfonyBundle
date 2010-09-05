@@ -9,6 +9,9 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Definition;
 
+/**
+ * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
+ */
 class AWeekOfSymfonyExtension extends Extension
 {
     public function configLoad($config, ContainerBuilder $container)

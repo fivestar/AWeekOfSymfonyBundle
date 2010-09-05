@@ -72,7 +72,7 @@
 
 <form action="<?php echo $view['entry_router']->generate('awos_delete', $entry) ?>" method="post">
     <input type="hidden" name="_method" value="delete" />
-    <p><input type="submit" value="Clear entry" /></p>
+    <p><input type="submit" value="Clear entry" id="clear-button" /></p>
 </form>
 
 <script>
@@ -83,6 +83,12 @@ jQuery(function($) {
         $('#translated-text').load(form.attr('action'), form.serializeArray());
 
         event.preventDefault();
+    });
+
+    $('#clear-button').click(function(event) {
+        if (!confirm('Are you sure!? 消すよ!?')) {
+            event.preventDefault();
+        }
     });
 });
 </script>

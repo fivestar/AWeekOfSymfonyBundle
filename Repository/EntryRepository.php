@@ -4,6 +4,11 @@ namespace Bundle\AWeekOfSymfonyBundle\Repository;
 
 use Bundle\AWeekOfSymfonyBundle\Model\Entry;
 
+/**
+ * Entry repository (using pdo, sqlite3)
+ *
+ * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
+ */
 class EntryRepository
 {
     protected $file;
