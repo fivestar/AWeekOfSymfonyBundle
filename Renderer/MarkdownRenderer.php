@@ -33,8 +33,8 @@ class MarkdownRenderer
         $contents[] = $this->formatter->header('開発メーリングリスト', 2);
 
         $links = array();
-        foreach ($this->entry->getMailingList() as $uri => $label) {
-            $links[] = $this->formatter->link($label, $uri);
+        foreach ($this->entry->getMailingList() as $thread) {
+            $links[] = $this->formatter->link($thread->getSubject(), $thread->getUri());
         }
         $contents[] = $this->formatter->ulist($links);
 

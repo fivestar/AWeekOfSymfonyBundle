@@ -29,7 +29,59 @@ class EntryController extends Controller
         ));
     }
 
-    public function showAction($year, $month, $day, $slug)
+    public function showAction($year = null, $month = null, $day = null, $slug = null)
+    {
+        $request = $this->container->get('request');
+
+        if ($request->attribute->has('entry')) {
+            $entry = $request->attribute->get('entry');
+        } else {
+            $entry = $this->getEntry($year, $month, $day, $slug);
+        }
+
+        $renderer = new MarkdownRenderer($entry);
+        $markdown = $renderer->output();
+
+        if ($request->getRequestFormat() === 'markdown') {
+            $response = $this->createResponse($markdown, 200, array(
+                'Content-Type' => 'text/plain',
+            ));
+        } else {
+            $response = $this->render('AWeekOfSymfonyBundle:Entry:show', array(
+                'entry'      => $entry,
+                'markdown'   => $markdown,
+                'requestUri' => $this->container->get('request')->getRequestUri(),
+            ));
+        }
+
+        return $response;
+    }
+
+    public function editAction($year, $month, $day, $slug)
+    {
+        $request = $this->container->get('request');
+
+        $entry = $this->getEntry($year, $month, $day, $slug);
+
+        $response = $this->render('AWeekOfSymfonyBundle:Entry:edit', array(
+            'entry'      => $entry,
+            'requestUri' => $this->container->get('request')->getRequestUri(),
+        ));
+
+        return $response;
+    }
+
+    public function translateAction($year, $month, $day, $slug)
+    {
+        $entry = $this->getEntry($year, $month, $day, $slug);
+
+        $request = $this->container->get('request');
+        $entryData = $request->request->get('entry');
+
+        $this->forward('AWeekOfSymfonyBundle:Entry:show', array('entry' => $entry));
+    }
+
+    private function getEntry($year, $month, $day, $slug)
     {
         $uri = sprintf('http://www.symfony-project.org/blog/%s/%s/%s/%s', $year, $month, $day, $slug);
 
@@ -40,23 +92,6 @@ class EntryController extends Controller
             throw new NotFoundHttpException('Blog not found', $e->getCode(), $e);
         }
 
-        $renderer = new MarkdownRenderer($entry);
-        $markdown = $renderer->output();
-
-        if ($this->container->get('request')->getRequestFormat() === 'markdown') {
-            $response = $this->createResponse($markdown, 200, array(
-                'Content-Type' => 'text/plain',
-            ));
-        } else {
-            $form = new EntryTranslateForm('entry', $entry, $this->container->get('validator'));
-
-            $response = $this->render('AWeekOfSymfonyBundle:Entry:show', array(
-                'entry'    => $entry,
-                'form'     => new SafeDecorator($form),
-                'markdown' => $markdown,
-            ));
-        }
-
-        return $response;
+        return $entry;
     }
 }

@@ -17,7 +17,6 @@ class EntryTranslateForm extends Form
 
         $highlightGroup = new FieldGroup('allHighlights');
         foreach ($entry->getAllHighlights() as $name => $highlights) {
-            $name = preg_replace('/\W/', '', $name);
             $group = new FieldGroup($name);
             foreach ($highlights as $commit => $highlight) {
                 $group->add(new TextField($commit));

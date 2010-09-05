@@ -7,33 +7,12 @@ namespace Bundle\AWeekOfSymfonyBundle\Model;
  *
  * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
  */
-class Entry
+class Entry extends EntrySummary
 {
-    protected $uri;
-    protected $title;
     protected $summary;
     protected $mailingList;
     protected $highlights;
     protected $otherChangesUri;
-
-    public function __construct($uri)
-    {
-        $this->uri = $uri;
-    }
-
-    public function getUri()
-    {
-        return $this->uri;
-    }
-
-    public function setTitle($title)
-    {
-        $this->title = $title;
-    }
-
-    public function getTitle()
-    {
-        return $this->title;
     }
 
     public function setSummary($summary)
@@ -56,7 +35,7 @@ class Entry
         return $this->mailingList;
     }
 
-    public function setHighlights($name, $highlights)
+    public function setHighlights($name, HighlightCollection $highlights)
     {
         $this->highlights[$name] = $highlights;
     }

@@ -26,7 +26,9 @@ class RecentlyEntriesScraper
 
         $entries = array();
         foreach ($links as $link) {
-            $entries[] = new EntrySummary($link->getUri(), $link->getNode()->nodeValue);
+            $entry = new EntrySummary($link->getUri());
+            $entry->setSubject($link->getNode()->nodeValue);
+            $entries[] = $entry;
         }
 
         return $entries;

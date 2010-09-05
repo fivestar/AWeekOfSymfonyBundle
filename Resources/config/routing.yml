@@ -3,6 +3,17 @@ awos:
     defaults: { _controller: AWeekOfSymfonyBundle:Entry:index }
 
 awos_show:
-    pattern:  /:year/:month/:day/:slug.:_format
+    pattern:  /:path.:_format
     defaults: { _controller: AWeekOfSymfonyBundle:Entry:show, _format: html }
-    requirements: { year: '\d{4}', month: '\d{2}', day: '\d{2}', slug: 'a-week-of-symfony-[a-z0-9-]+', _format: '(html|markdown)' }
+    requirements: { path: '\d{4}/\d{2}/\d{2}/a-week-of-symfony-[a-z0-9-]+', _format: '(html|markdown)', _method: [get] }
+    
+
+awos_edit:
+    pattern:  /edit/:path
+    defaults: { _controller: AWeekOfSymfonyBundle:Entry:edit }
+    requirements: { path: '\d{4}/\d{2}/\d{2}/a-week-of-symfony-[a-z0-9-]+', _method: [get] }
+
+awos_translate:
+    pattern:  /:path
+    defaults: { _controller: AWeekOfSymfonyBundle:Entry:translate }
+    requirements: { path: '\d{4}/\d{2}/\d{2}/a-week-of-symfony-[a-z0-9-]+', _method: [post]  }

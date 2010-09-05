@@ -3,7 +3,9 @@
 namespace Bundle\AWeekOfSymfonyBundle\Scraper;
 
 use Bundle\AWeekOfSymfonyBundle\Model\Entry;
+use Bundle\AWeekOfSymfonyBundle\Model\HighlightCollection;
 use Bundle\AWeekOfSymfonyBundle\Model\Highlight;
+use Bundle\AWeekOfSymfonyBundle\Model\MailThread;
 use Goutte\Client;
 
 /**
@@ -27,9 +29,9 @@ class EntryScraper
             throw new \RuntimeException(sprintf('Status code is not 200, %d returned: %s', $client->getResponse()->getStatus(), $uri));
         }
 
-        // title
-        $title = $crawler->filter('#topbar h2')->text();
-        $entry->setTitle($title);
+        // subject
+        $subject = $crawler->filter('#topbar h2')->text();
+        $entry->setSubject($subject);
 
         // summary
         $node = $crawler->filter('#content1 div.post p');
@@ -45,7 +47,7 @@ class EntryScraper
                     $ml = array();
                     preg_match_all('!<a[^>]*href="([^"]+)"[^>]*>([^<]+)</a>!', $this->getHtml($node), $matches, PREG_SET_ORDER);
                     foreach ($matches as $m) {
-                        $ml[$m[1]] = $m[2];
+                        $ml[] = new MailThread($m[1], $m[2]);
                     }
 
                     $entry->setMailingList($ml);
@@ -56,10 +58,6 @@ class EntryScraper
 
                 // Development highlights
                 case 'highlights':
-                    if (!isset($highlights)) {
-                        $highlights = array();
-                    }
-
                     // headers
                     if ($node->tagName === 'p') {
                         $value = trim($node->nodeValue);
@@ -74,7 +72,8 @@ class EntryScraper
                     }
                     // contents
                     elseif ($node->tagName === 'ul') {
-                        $tmp = array();
+                        $highlights = new HighlightCollection();
+                        $highlights->setLabel($value);
 
                         // scrape lists
                         $listAll = $this->getHtml($node);
@@ -94,10 +93,11 @@ class EntryScraper
                             foreach ($matches as $anchor) {
                                 $h->addCommit($anchor[2], $anchor[1]);
                             }
-                            $tmp[] = $h;
+                            $highlights[] = $h;
                         }
 
-                        $entry->setHighlights($value, $tmp);
+                        $key = trim(strtolower(preg_replace('/\W/', '_', $value)), '_');
+                        $entry->setHighlights($key, $highlights);
 
                         unset($value);
                     }

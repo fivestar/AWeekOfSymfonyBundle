@@ -1,0 +1,9 @@
+parameters:
+    awos.templating.helper.entry_router.class: Bundle\AWeekOfSymfonyBundle\Templating\Helper\EntryRouterHelper
+
+services:
+    awos.templating.helper.entry_router:
+        class: %awos.templating.helper.entry_router.class%
+        arguments: [ @router ]
+        tags:
+            - { name: templating.helper, alias: entry_router }

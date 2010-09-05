@@ -3,25 +3,24 @@
 namespace Bundle\AWeekOfSymfonyBundle\Model;
 
 /**
- * EntrySummary
+ * Mail thread
  *
  * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
  */
-class EntrySummary
+class MailThread
 {
-    protected $path;
     protected $uri;
     protected $subject;
 
-    public function __construct($uri)
+    public function __construct($uri, $subject)
     {
         $this->uri = $uri;
-        $this->path = str_replace('http://www.symfony-project.org/blog/', '', $uri);
+        $this->subject = $subject;
     }
 
-    public function getPath()
+    public function setUri($uri)
     {
-        return $this->path;
+        $this->uri = $uri;
     }
 
     public function getUri()
@@ -31,11 +30,11 @@ class EntrySummary
 
     public function setSubject($subject)
     {
-        $this->title = $subject;
+        $this->subject = $subject;
     }
 
     public function getSubject()
     {
-        return $this->title;
+        return $this->subject;
     }
 }
