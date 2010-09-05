@@ -67,8 +67,12 @@
 
 </article>
 
+<hr />
+
 <p>Translated: </p>
-<div id="translated-text">&nbsp;</div>
+<div id="translated-text">
+<?php $view['actions']->output('AWeekOfSymfonyBundle:Entry:show', array('entry' => $entry)) ?>
+</div>
 
 <form action="<?php echo $view['entry_router']->generate('awos_delete', $entry) ?>" method="post">
     <input type="hidden" name="_method" value="delete" />

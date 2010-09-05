@@ -4,5 +4,5 @@
 </textarea>
 
 <div class="markdown">
-<?php echo $view['markdown']->transform($rawMarkdown) ?>
+<?php echo $view['markdown']->transform($markdown) ?>
 </div>
