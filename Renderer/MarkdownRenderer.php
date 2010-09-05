@@ -23,46 +23,54 @@ class MarkdownRenderer
     public function output()
     {
         $contents = array();
-        $contents[] = $this->getTitle();
+        $contents[] = $this->getSubject();
 
         $contents[] = $this->outputReportMessage();
         $contents[] = "<br />\n<br />\n<hr />";
 
         $contents[] = $this->formatter->linkText(rtrim($this->entry->getSummary()));
 
-        $contents[] = $this->formatter->header('開発メーリングリスト', 2);
+        if ($this->entry->hasMailingList()) {
+            $contents[] = $this->formatter->header('開発メーリングリスト', 2);
 
-        $links = array();
-        foreach ($this->entry->getMailingList() as $thread) {
-            $links[] = $this->formatter->link($thread->getSubject(), $thread->getUri());
+            $links = array();
+            foreach ($this->entry->getMailingList() as $thread) {
+                $links[] = $this->formatter->link($thread->getSubject(), $thread->getUri());
+            }
+            $contents[] = $this->formatter->ulist($links);
         }
-        $contents[] = $this->formatter->ulist($links);
 
-        $contents[] = $this->formatter->header('開発ハイライト', 2);
+        if ($this->entry->hasHighlights()) {
+            $contents[] = $this->formatter->header('開発ハイライト', 2);
 
-        foreach ($this->entry->getAllHighlights() as $name => $highlights) {
-            $contents[] = $this->formatter->header(str_replace('branch', 'ブランチ', $name), 3);
+            foreach ($this->entry->getAllHighlights() as $highlights) {
+                $contents[] = $this->formatter->header(str_replace('branch', 'ブランチ', $highlights->getLabel()), 3);
 
-            $commits = array();
-            foreach ($highlights as $h) {
-                $links = array();
-                foreach ($h->getCommits() as $label => $uri) {
-                    $links[] = $this->formatter->link($label, $uri);
+                $commits = array();
+                foreach ($highlights as $h) {
+                    $links = array();
+                    foreach ($h->getCommits() as $label => $uri) {
+                        $links[] = $this->formatter->link($label, $uri);
+                    }
+                    $commits[] =  implode(', ', $links). ' ' . htmlspecialchars_decode($h->getContent(), ENT_QUOTES);
                 }
-                $commits[] =  implode(', ', $links). ' ' . htmlspecialchars_decode($h->getContent(), ENT_QUOTES);
+
+                $contents[] = $this->formatter->ulist($commits);
             }
 
-            $contents[] = $this->formatter->ulist($commits);
+            if ($this->entry->hasOtherChanges()) {
+                $contents[] = $this->formatter->link('その他多数', $this->entry->getOtherChangesUri());
+            }
         }
 
-        $contents[] = $this->formatter->link('その他多数', $this->entry->getOtherChangesUri());
+        $contents[] = $this->outputTranslatorComment();
 
         return implode("\n\n", $contents);
     }
 
-    protected function getTitle()
+    protected function getSubject()
     {
-        return $this->formatter->header($this->entry->getTitle(), 1);
+        return $this->formatter->header($this->entry->getSubject(), 1);
     }
 
     protected function outputReportMessage()
@@ -79,10 +87,16 @@ EOS
 
     protected function outputTranslatorComment()
     {
-        return <<<EOS
+        $comment = <<<EOS
 > **NOTE**
 > 翻訳者コメント<br />
 > 
 EOS;
+
+        if ($this->entry->hasTranslatorComment()) {
+            $comment .= $this->entry->getTranslatorComment();
+        }
+
+        return $comment;
     }
 }

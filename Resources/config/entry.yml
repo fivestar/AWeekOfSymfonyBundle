@@ -1,5 +1,7 @@
 parameters:
     awos.templating.helper.entry_router.class: Bundle\AWeekOfSymfonyBundle\Templating\Helper\EntryRouterHelper
+    awos.repository.entry_repository.class: Bundle\AWeekOfSymfonyBundle\Repository\EntryRepository
+    awos.repository.entry_repository.file: %kernel.cache_dir%/aweekofsymfony.db
 
 services:
     awos.templating.helper.entry_router:
@@ -7,3 +9,6 @@ services:
         arguments: [ @router ]
         tags:
             - { name: templating.helper, alias: entry_router }
+    awos.repository.entry_repository:
+        class: %awos.repository.entry_repository.class%
+        arguments: [ %awos.repository.entry_repository.file% ]

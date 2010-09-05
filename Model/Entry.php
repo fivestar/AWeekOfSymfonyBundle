@@ -13,7 +13,7 @@ class Entry extends EntrySummary
     protected $mailingList;
     protected $highlights;
     protected $otherChangesUri;
-    }
+    protected $translatorComment;
 
     public function setSummary($summary)
     {
@@ -23,6 +23,11 @@ class Entry extends EntrySummary
     public function getSummary()
     {
         return $this->summary;
+    }
+
+    public function hasMailingList()
+    {
+        return isset($this->mailingList) && count($this->mailingList);
     }
 
     public function setMailingList($list)
@@ -35,6 +40,16 @@ class Entry extends EntrySummary
         return $this->mailingList;
     }
 
+    public function hasHighlights()
+    {
+        return isset($this->highlights) && count($this->highlights);
+    }
+
+    public function getAllHighlights()
+    {
+        return $this->highlights;
+    }
+
     public function setHighlights($name, HighlightCollection $highlights)
     {
         $this->highlights[$name] = $highlights;
@@ -45,9 +60,9 @@ class Entry extends EntrySummary
         return $this->highlights[$name];
     }
 
-    public function getAllHighlights()
+    public function hasOtherChanges()
     {
-        return $this->highlights;
+        return isset($this->otherChangesUri);
     }
 
     public function setOtherChangesUri($uri)
@@ -58,5 +73,20 @@ class Entry extends EntrySummary
     public function getOtherChangesUri()
     {
         return $this->otherChangesUri;
+    }
+
+    public function hasTranslatorComment()
+    {
+        return isset($this->translatorComment);
+    }
+
+    public function setTranslatorComment($comment) 
+    {
+        $this->translatorComment = $comment;
+    }
+
+    public function getTranslatorComment()
+    {
+        return $this->translatorComment;
     }
 }

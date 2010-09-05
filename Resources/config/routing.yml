@@ -9,7 +9,7 @@ awos_show:
     
 
 awos_edit:
-    pattern:  /edit/:path
+    pattern:  /:path/edit
     defaults: { _controller: AWeekOfSymfonyBundle:Entry:edit }
     requirements: { path: '\d{4}/\d{2}/\d{2}/a-week-of-symfony-[a-z0-9-]+', _method: [get] }
 
@@ -17,3 +17,8 @@ awos_translate:
     pattern:  /:path
     defaults: { _controller: AWeekOfSymfonyBundle:Entry:translate }
     requirements: { path: '\d{4}/\d{2}/\d{2}/a-week-of-symfony-[a-z0-9-]+', _method: [post]  }
+
+awos_delete:
+    pattern:  /:path
+    defaults: { _controller: AWeekOfSymfonyBundle:Entry:delete }
+    requirements: { path: '\d{4}/\d{2}/\d{2}/a-week-of-symfony-[a-z0-9-]+', _method: [delete]  }

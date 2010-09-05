@@ -29,14 +29,14 @@ class EntryController extends Controller
         ));
     }
 
-    public function showAction($year = null, $month = null, $day = null, $slug = null)
+    public function showAction($path = null)
     {
         $request = $this->container->get('request');
 
-        if ($request->attribute->has('entry')) {
-            $entry = $request->attribute->get('entry');
+        if ($request->attributes->has('entry')) {
+            $entry = $request->attributes->get('entry');
         } else {
-            $entry = $this->getEntry($year, $month, $day, $slug);
+            $entry = $this->getEntry($path);
         }
 
         $renderer = new MarkdownRenderer($entry);
@@ -48,20 +48,20 @@ class EntryController extends Controller
             ));
         } else {
             $response = $this->render('AWeekOfSymfonyBundle:Entry:show', array(
-                'entry'      => $entry,
-                'markdown'   => $markdown,
-                'requestUri' => $this->container->get('request')->getRequestUri(),
+                'entry'       => $entry,
+                'markdown'    => $markdown,
+                'rawMarkdown' => new SafeDecorator($markdown),
             ));
         }
 
         return $response;
     }
 
-    public function editAction($year, $month, $day, $slug)
+    public function editAction($path)
     {
         $request = $this->container->get('request');
 
-        $entry = $this->getEntry($year, $month, $day, $slug);
+        $entry = $this->getEntry($path);
 
         $response = $this->render('AWeekOfSymfonyBundle:Entry:edit', array(
             'entry'      => $entry,
@@ -71,19 +71,65 @@ class EntryController extends Controller
         return $response;
     }
 
-    public function translateAction($year, $month, $day, $slug)
+    public function translateAction($path)
     {
-        $entry = $this->getEntry($year, $month, $day, $slug);
+        $entry = $this->getEntry($path);
 
         $request = $this->container->get('request');
-        $entryData = $request->request->get('entry');
+        $data = $request->request->get('entry');
 
-        $this->forward('AWeekOfSymfonyBundle:Entry:show', array('entry' => $entry));
+        if (isset($data['summary']) && strlen($data['summary'])) {
+            $entry->setSummary(trim($data['summary']));
+        }
+
+        if (isset($data['mailing_list'])) {
+            foreach ($entry->getMailingList() as $i => $thread) {
+                if (isset($data['mailing_list'][$i])) {
+                    $thread->setSubject(trim($data['mailing_list'][$i]));
+                }
+            }
+        }
+
+        if (isset($data['highlights'])) {
+            foreach ($entry->getAllHighlights() as $name => $highlights) {
+                foreach ($highlights as $i => $highlight) {
+                    if (isset($data['highlights'][$name][$i])) {
+                        $highlight->setContent($data['highlights'][$name][$i]);
+                    }
+                }
+            }
+        }
+
+        if (isset($data['translator_comment'])) {
+            $entry->setTranslatorComment(trim($data['translator_comment']));
+        }
+
+
+        $repository = $this->container->get('awos.repository.entry_repository');
+        $repository->store($entry);
+
+        return $this->forward('AWeekOfSymfonyBundle:Entry:show', array('entry' => $entry));
     }
 
-    private function getEntry($year, $month, $day, $slug)
+    public function deleteAction($path)
     {
-        $uri = sprintf('http://www.symfony-project.org/blog/%s/%s/%s/%s', $year, $month, $day, $slug);
+        $repository = $this->container->get('awos.repository.entry_repository');
+        $repository->remove($path);
+
+        $dummyEntry = new Entry($path);
+
+        return $this->redirect($this->container->get('awos.templating.helper.entry_router')->generate('awos_edit', $dummyEntry));
+    }
+
+    private function getEntry($path)
+    {
+        $repository = $this->container->get('awos.repository.entry_repository');
+        if (!$this->container->get('request')->query->get('original')
+            && (false !== $entry = $repository->get($path))) {
+            return $entry;
+        }
+
+        $uri = sprintf('http://www.symfony-project.org/blog/%s', $path);
 
         $scraper = new EntryScraper();
         try {

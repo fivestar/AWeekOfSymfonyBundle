@@ -47,7 +47,7 @@ class EntryScraper
                     $ml = array();
                     preg_match_all('!<a[^>]*href="([^"]+)"[^>]*>([^<]+)</a>!', $this->getHtml($node), $matches, PREG_SET_ORDER);
                     foreach ($matches as $m) {
-                        $ml[] = new MailThread($m[1], $m[2]);
+                        $ml[] = new MailThread(htmlspecialchars_decode($m[1], ENT_QUOTES), $m[2]);
                     }
 
                     $entry->setMailingList($ml);
@@ -65,7 +65,7 @@ class EntryScraper
                         // other changes
                         if (false !== strpos($value, '...and many other changes')) {
                             preg_match('!href="([^"]+)"!', $this->getHtml($node), $matches);
-                            $entry->setOtherChangesUri($matches[1]);
+                            $entry->setOtherChangesUri(htmlspecialchars_decode($matches[1], ENT_QUOTES));
                             unset($value);
                         }
 
@@ -91,7 +91,7 @@ class EntryScraper
 
                             preg_match_all('!<a[^>]*href="([^"]+)"[^>]*>([^<]+)</a>!', $links, $matches, PREG_SET_ORDER);
                             foreach ($matches as $anchor) {
-                                $h->addCommit($anchor[2], $anchor[1]);
+                                $h->addCommit($anchor[2], htmlspecialchars_decode($anchor[1], ENT_QUOTES));
                             }
                             $highlights[] = $h;
                         }
