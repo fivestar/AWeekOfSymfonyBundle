@@ -7,13 +7,15 @@ namespace Bundle\AWeekOfSymfonyBundle\Model;
  *
  * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
  */
-class Entry extends EntrySummary
+class Entry extends EntrySummary implements \Serializable
 {
     protected $summary;
     protected $mailingList;
     protected $highlights;
     protected $otherChangesUri;
     protected $translatorComment;
+
+    protected $updatedAt;
 
     public function setSummary($summary)
     {
@@ -88,5 +90,36 @@ class Entry extends EntrySummary
     public function getTranslatorComment()
     {
         return $this->translatorComment;
+    }
+
+    public function setUpdatedAt($updatedAt)
+    {
+        $this->updatedAt = $updatedAt;
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt;
+    }
+
+    public function isOriginal()
+    {
+        return !isset($this->updatedAt);
+    }
+
+    public function serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['updatedAt']);
+
+        return serialize($vars);
+    }
+
+    public function unserialize($data)
+    {
+        $data = unserialize($data);
+        foreach ($data as $key => $value) {
+            $this->$key = $value;
+        }
     }
 }

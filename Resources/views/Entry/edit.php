@@ -4,13 +4,13 @@
 
 <article>
 
-<h2><?php echo $entry->getSubject() ?></h2>
+<h2><?php echo $originalEntry->getSubject() ?></h2>
 
-<p><a href="<?php echo $entry->getUri() ?>" target="_blank">&gt; Read in original</a></p>
+<p><a href="<?php echo $originalEntry->getUri() ?>" target="_blank">&gt; Read in original</a></p>
 
 <form action="<?php echo $view['entry_router']->generate('awos_translate', $entry) ?>" method="post" id="translate-form">
 
-    <div class="origin"><?php echo $entry->getRawValue()->getSummary() ?></div>
+    <div class="origin"><?php echo $originalEntry->getRawValue()->getSummary() ?></div>
     <div>
         <textarea name="entry[summary]" rows="5" cols="80"><?php echo $markdownSummary ?></textarea>
     </div>
@@ -20,9 +20,10 @@
 
     <div class="origin">
         <ul>
+            <?php $originalML = $originalEntry->getMailinglist(); ?>
             <?php foreach ($entry->getMailinglist() as $i => $thread): ?>
             <li>
-                <a href="<?php echo $thread->getUri() ?>" target="_blank"><?php echo $thread->getSubject() ?></a>
+                <a href="<?php echo $thread->getUri() ?>" target="_blank"><?php echo $originalML[$i]->getSubject() ?></a>
                 <br>
                 <input type="text" name="entry[mailing_list][<?php echo $i ?>]" value="<?php echo $thread->getSubject() ?>" size="120">
             </li>
@@ -36,6 +37,7 @@
     <?php if ($entry->hasHighlights()): ?>
     <div class="origin">
         <?php foreach ($entry->getAllHighlights() as $name => $highlights): ?>
+        <?php $originalHighlights = $originalEntry->getHighlights($name); ?>
         <h4><?php echo $highlights->getLabel(); ?></h4>
 
         <p>
@@ -49,7 +51,7 @@
                 <?php $counter = 0; foreach ($highlight->getCommits() as $rev => $uri): ?>
                 <a href="<?php echo $uri ?>" target="_blank"><?php echo $rev ?></a><?php if ($counter): ?>, <?php endif; ?>
                 <?php $counter++; endforeach; unset($counter); ?>
-                <?php echo $highlight->getContent() ?>
+                <?php echo $originalHighlights[$i]->getContent() ?>
                 <br>
                 <textarea name="entry[highlights][<?php echo $name ?>][highlight][<?php echo $i ?>]"
                     rows="<?php echo max(2, intval(strlen($highlight->getContent()) / 50)) ?>"
@@ -59,8 +61,9 @@
         </ul>
 
         <?php if ($highlights->hasSummaries()): ?>
+        <?php $originalHSummaries = $originalHighlights->getSummaries() ?>
         <?php foreach ($highlights->getSummaries() as $i => $summary): ?>
-        <p><?php echo $summary ?></p>
+        <p><?php echo $originalHSummaries[$i] ?></p>
         <p>
             <textarea name="entry[highlights][<?php echo $name ?>][summary][<?php echo $i ?>]"
                 rows="5" cols="100"><?php echo $summary ?></textarea>
@@ -87,7 +90,7 @@
 
 <hr />
 
-<p>Translated: </p>
+<h2>Translation result</h2>
 <div id="translated-text">
 <?php $view['actions']->output('AWeekOfSymfonyBundle:Entry:show', array('entry' => $entry)) ?>
 </div>

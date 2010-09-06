@@ -50,9 +50,9 @@ class EntryController extends Controller
             ));
         } else {
             $response = $this->render('AWeekOfSymfonyBundle:Entry:show', array(
-                'entry'       => $entry,
-                'markdown'    => $markdown,
-                'rawMarkdown' => new SafeDecorator($markdown),
+                'entry'        => $entry,
+                'markdown'     => $markdown,
+                'markdownSafe' => new SafeDecorator($markdown),
             ));
         }
 
@@ -64,12 +64,14 @@ class EntryController extends Controller
         $request = $this->container->get('request');
 
         $entry = $this->getEntry($path);
+        $originalEntry = $entry->isOriginal() ? $entry : $this->getEntry($path, true);
 
         $formatter = new MarkdownFormatter();
         $markdownSummary = $formatter->linkText($entry->getSummary());
 
         $response = $this->render('AWeekOfSymfonyBundle:Entry:edit', array(
             'entry'           => $entry,
+            'originalEntry'   => $originalEntry,
             'markdownSummary' => $markdownSummary,
         ));
 
@@ -136,15 +138,14 @@ class EntryController extends Controller
         return $this->redirect($this->container->get('awos.templating.helper.entry_router')->generate('awos_edit', $dummyEntry));
     }
 
-    private function getEntry($path)
+    private function getEntry($path, $needsOriginal = false)
     {
         $repository = $this->container->get('awos.repository.entry_repository');
-        if (!$this->container->get('request')->query->get('original')
+        if ((!$needsOriginal && !$this->container->get('request')->query->get('original'))
             && (false !== ($entry = $repository->get($path)))
         ) {
             return $entry;
         }
-
 
         $uri = sprintf('http://www.symfony-project.org/blog/%s', $path);
         $publishedDate = new \DateTime(substr($path, 0, 10));

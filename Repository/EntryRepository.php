@@ -33,16 +33,17 @@ class EntryRepository
 
     public function get($path)
     {
-        $sql = "SELECT data FROM entry WHERE path = :path";
+        $sql = "SELECT data, updated_at FROM entry WHERE path = :path";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(array(':path' => $path));
 
-        $data = $stmt->fetchColumn();
+        $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (!$data) {
             return false;
         }
 
-        $entry = unserialize($data);
+        $entry = unserialize($data['data']);
+        $entry->setUpdatedAt(new \DateTime($data['updated_at']));
 
         return $entry;
     }
@@ -67,6 +68,8 @@ class EntryRepository
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
+
+        $entry->setUpdatedAt($now);
 
         return $stmt->rowCount();
     }
