@@ -2,7 +2,7 @@
 
 <article>
 
-<h2>Recently "A Week of symfony" entries</h2>
+<h2>Recently "A week of symfony" entries</h2>
 
 <?php if (count($entries) > 0): ?>
 <table id="awos-entry-summary">
