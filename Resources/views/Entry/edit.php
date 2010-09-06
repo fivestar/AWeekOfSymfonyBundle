@@ -6,11 +6,13 @@
 
 <h2><?php echo $entry->getSubject() ?></h2>
 
+<p><a href="<?php echo $entry->getUri() ?>" target="_blank">&gt; Read in original</a></p>
+
 <form action="<?php echo $view['entry_router']->generate('awos_translate', $entry) ?>" method="post" id="translate-form">
 
-    <div class="origin"><?php echo $entry->getSummary() ?></div>
+    <div class="origin"><?php echo $entry->getRawValue()->getSummary() ?></div>
     <div>
-        <textarea name="entry[summary]" rows="5" cols="80"><?php echo $entry->getSummary() ?></textarea>
+        <textarea name="entry[summary]" rows="5" cols="80"><?php echo $markdownSummary ?></textarea>
     </div>
 
     <?php if ($entry->hasMailingList()): ?>
@@ -36,23 +38,37 @@
         <?php foreach ($entry->getAllHighlights() as $name => $highlights): ?>
         <h4><?php echo $highlights->getLabel(); ?></h4>
 
+        <p>
+            <?php if ($highlights->getChangeLogUri()): ?><a href="<?php echo $highlights->getChangeLogUri() ?>" target="_blank"><?php
+                endif; ?>チェンジログ<?php if ($highlights->getChangeLogUri()): ?></a><?php endif; ?>:
+        </p>
+
         <ul>
-        <?php foreach ($highlights as $i => $highlight): ?>
+            <?php foreach ($highlights as $i => $highlight): ?>
             <li>
                 <?php $counter = 0; foreach ($highlight->getCommits() as $rev => $uri): ?>
                 <a href="<?php echo $uri ?>" target="_blank"><?php echo $rev ?></a><?php if ($counter): ?>, <?php endif; ?>
                 <?php $counter++; endforeach; unset($counter); ?>
                 <?php echo $highlight->getContent() ?>
                 <br>
-                <textarea name="entry[highlights][<?php echo $name ?>][<?php echo $i ?>]" rows="2" cols="80"><?php echo $highlight->getContent() ?></textarea>
+                <textarea name="entry[highlights][<?php echo $name ?>][highlight][<?php echo $i ?>]"
+                    rows="<?php echo max(2, intval(strlen($highlight->getContent()) / 50)) ?>"
+                    cols="80"><?php echo $highlight->getContent() ?></textarea>
             </li>
-        <?php endforeach; ?>
+            <?php endforeach; ?>
         </ul>
+
+        <?php if ($highlights->hasSummaries()): ?>
+        <?php foreach ($highlights->getSummaries() as $i => $summary): ?>
+        <p><?php echo $summary ?></p>
+        <p>
+            <textarea name="entry[highlights][<?php echo $name ?>][summary][<?php echo $i ?>]"
+                rows="5" cols="100"><?php echo $summary ?></textarea>
+        </p>
+        <?php endforeach; ?>
+        <?php endif; ?>
         <?php endforeach; ?>
 
-        <?php if ($entry->hasOtherChanges()): ?>
-        <p><a href="<?php echo $entry->getOtherChangesUri() ?>" target="_blank">その他多数</a></p>
-        <?php endif; ?>
     </div>
     <?php endif; ?>
 

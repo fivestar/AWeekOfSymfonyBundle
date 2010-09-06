@@ -10,7 +10,9 @@ use Bundle\AWeekOfSymfonyBundle\Model\Entry;
 use Bundle\AWeekOfSymfonyBundle\Form\EntryTranslateForm;
 use Bundle\AWeekOfSymfonyBundle\Scraper\RecentlyEntriesScraper;
 use Bundle\AWeekOfSymfonyBundle\Scraper\EntryScraper;
+use Bundle\AWeekOfSymfonyBundle\Scraper\EntryScraperBefore192;
 use Bundle\AWeekOfSymfonyBundle\Renderer\MarkdownRenderer;
+use Bundle\AWeekOfSymfonyBundle\Renderer\MarkdownFormatter;
 
 /**
  * EntryController
@@ -63,9 +65,12 @@ class EntryController extends Controller
 
         $entry = $this->getEntry($path);
 
+        $formatter = new MarkdownFormatter();
+        $markdownSummary = $formatter->linkText($entry->getSummary());
+
         $response = $this->render('AWeekOfSymfonyBundle:Entry:edit', array(
-            'entry'      => $entry,
-            'requestUri' => $this->container->get('request')->getRequestUri(),
+            'entry'           => $entry,
+            'markdownSummary' => $markdownSummary,
         ));
 
         return $response;
@@ -93,9 +98,19 @@ class EntryController extends Controller
         if (isset($data['highlights'])) {
             foreach ($entry->getAllHighlights() as $name => $highlights) {
                 foreach ($highlights as $i => $highlight) {
-                    if (isset($data['highlights'][$name][$i])) {
-                        $highlight->setContent($data['highlights'][$name][$i]);
+                    if (isset($data['highlights'][$name]['highlight'][$i])) {
+                        $highlight->setContent(trim($data['highlights'][$name]['highlight'][$i]));
                     }
+                }
+
+                if ($highlights->hasSummaries()) {
+                    $summaries = $highlights->getSummaries();
+                    foreach ($summaries as $i => $summary) {
+                        if (isset($data['highlights'][$name]['summary'][$i])) {
+                            $summaries[$i] = trim($data['highlights'][$name]['summary'][$i]);
+                        }
+                    }
+                    $highlights->setSummaries($summaries);
                 }
             }
         }
@@ -125,13 +140,21 @@ class EntryController extends Controller
     {
         $repository = $this->container->get('awos.repository.entry_repository');
         if (!$this->container->get('request')->query->get('original')
-            && (false !== $entry = $repository->get($path))) {
+            && (false !== ($entry = $repository->get($path)))
+        ) {
             return $entry;
         }
 
-        $uri = sprintf('http://www.symfony-project.org/blog/%s', $path);
 
-        $scraper = new EntryScraper();
+        $uri = sprintf('http://www.symfony-project.org/blog/%s', $path);
+        $publishedDate = new \DateTime(substr($path, 0, 10));
+        $threshold = new \DateTime('2010-09-05');
+        if (intval($publishedDate->diff($threshold)->format('%r%a')) < 1) {
+            $scraper = new EntryScraper();
+        } else {
+            $scraper = new EntryScraperBefore192();
+        }
+
         try {
             $entry = $scraper->scrape($uri);
         } catch (\RuntimeException $e) {

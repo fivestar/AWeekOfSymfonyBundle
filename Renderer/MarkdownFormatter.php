@@ -39,6 +39,10 @@ class MarkdownFormatter
 
     public function link($title, $href)
     {
+        if (!$href) {
+            return $title;
+        }
+
         return sprintf('[%s](%s)', $title, $href);
     }
 

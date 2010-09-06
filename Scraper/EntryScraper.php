@@ -9,7 +9,7 @@ use Bundle\AWeekOfSymfonyBundle\Model\MailThread;
 use Goutte\Client;
 
 /**
- * Entry scraper.
+ * Entry scraper (# >= 192)
  *
  * @author Katsuhiro Ogawa <ko.fivestar@gmail.com>
  */
@@ -37,85 +37,96 @@ class EntryScraper
         $node = $crawler->filter('#content1 div.post p');
         $entry->setSummary($this->getHtml($this->getNode($node, 0)));
 
-        $state = false;
-        foreach ($crawler->filter('#content1 div.post')->children() as $node) {
-            if ($state !== false) {
-                switch($state) {
+        $state = null;
+        $previousState = false;
+        $nodes = iterator_to_array($crawler->filter('#content1 div.post')->children());
+        $i = 0;
+        do  {
+            $node = $nodes[$i++];
 
-                // Development mailing list
-                case 'mailinglist':
-                    $ml = array();
-                    preg_match_all('!<a[^>]*href="([^"]+)"[^>]*>([^<]+)</a>!', $this->getHtml($node), $matches, PREG_SET_ORDER);
-                    foreach ($matches as $m) {
-                        $ml[] = new MailThread(htmlspecialchars_decode($m[1], ENT_QUOTES), $m[2]);
-                    }
+            // seek headers
+            if ($node->tagName === 'h3') {
+                $nodeValue = trim($node->nodeValue);
+                $previousState = $state;
 
-                    $entry->setMailingList($ml);
+                // set previous highlights
+                if ($previousState === 'highlights' && isset($highlights)) {
+                    $key = trim(strtolower(preg_replace('/\W/', '_', $highlights->getLabel())), '_');
+                    $entry->setHighlights($key, $highlights);
+                }
 
+                if (strtolower($nodeValue) === 'development mailing list') {
+                    $state = 'mailinglist';
+
+                } elseif (stripos($nodeValue, 'development highlights')) {
+                    $state = 'highlights';
+
+                    $highlights = new HighlightCollection();
+                    $highlights->setLabel($nodeValue);
+                } else {
+                    // ignore after contents
                     $state = false;
+                }
 
-                    break;
-
-                // Development highlights
-                case 'highlights':
-                    // headers
-                    if ($node->tagName === 'p') {
-                        $value = trim($node->nodeValue);
-
-                        // other changes
-                        if (false !== strpos($value, '...and many other changes')) {
-                            preg_match('!href="([^"]+)"!', $this->getHtml($node), $matches);
-                            $entry->setOtherChangesUri(htmlspecialchars_decode($matches[1], ENT_QUOTES));
-                            unset($value);
-                        }
-
-                    }
-                    // contents
-                    elseif ($node->tagName === 'ul') {
-                        $highlights = new HighlightCollection();
-                        $highlights->setLabel($value);
-
-                        // scrape lists
-                        $listAll = $this->getHtml($node);
-                        preg_match_all('!<li>(.*?)</li>!', $listAll, $lists);
-
-                        foreach ($lists[1] as $li) {
-                            $h = new Highlight();
-
-                            // separate commit message
-                            $pos = strpos($li, '</a>: ');
-                            $links = substr($li, 0, $pos + 4);
-                            $text = substr($li, $pos + 6); 
-
-                            $h->setContent(trim($text));
-
-                            preg_match_all('!<a[^>]*href="([^"]+)"[^>]*>([^<]+)</a>!', $links, $matches, PREG_SET_ORDER);
-                            foreach ($matches as $anchor) {
-                                $h->addCommit($anchor[2], htmlspecialchars_decode($anchor[1], ENT_QUOTES));
-                            }
-                            $highlights[] = $h;
-                        }
-
-                        $key = trim(strtolower(preg_replace('/\W/', '_', $value)), '_');
-                        $entry->setHighlights($key, $highlights);
-
-                        unset($value);
-                    }
-
-                    break;
+                if ($state !== false) {
+                    $node = $nodes[$i++];
                 }
             }
 
-            // seek headers
-            if ($node->tagName === 'p' && trim($node->nodeValue) === 'Development mailing list') {
-                $state = 'mailinglist';
-            } elseif ($node->tagName === 'p' && trim($node->nodeValue) === 'Development highlights') {
-                $state = 'highlights';
-            } elseif ($node->tagName === 'p' && false !== strpos(trim($node->nodeValue), 'Development digest')) {
-                // ignore after contents
+            switch($state) {
+
+            // Development mailing list
+            case 'mailinglist':
+                $ml = array();
+                preg_match_all('!<a[^>]*href="([^"]+)"[^>]*>([^<]+)</a>!', $this->getHtml($node), $matches, PREG_SET_ORDER);
+                foreach ($matches as $m) {
+                    $ml[] = new MailThread(htmlspecialchars_decode($m[1], ENT_QUOTES), $m[2]);
+                }
+
+                $entry->setMailingList($ml);
+
+                break;
+
+            // Development highlights
+            case 'highlights':
+                // changelog and summaries
+                if ($node->tagName === 'p') {
+                    if (false !== stripos(trim($node->nodeValue), 'changelog')) {
+                        preg_match('!href="([^"]+)"!', $this->getHtml($node), $matches);
+                        $highlights->setChangeLogUri(htmlspecialchars_decode($matches[1], ENT_QUOTES));
+                    } else {
+                        $highlights->addSummary(trim($node->nodeValue));
+                    }
+                }
+                // contents
+                elseif ($node->tagName === 'ul') {
+                    // scrape lists
+                    $listAll = $this->getHtml($node);
+                    preg_match_all('!<li>(.*?)</li>!s', trim($listAll), $lists);
+
+                    foreach ($lists[1] as $li) {
+                        $li = trim($li);
+                        $h = new Highlight();
+
+                        // separate commit message
+                        $pos = strpos($li, '</a>:');
+                        $links = substr($li, 0, $pos + 4);
+                        $text = substr($li, $pos + 6); 
+
+                        $h->setContent(preg_replace('/ {2,}/', ' ', trim($text)));
+
+                        preg_match_all('!<a[^>]*?href="([^"]+)"[^>]*>([^<]+)</a>!s', $links, $matches, PREG_SET_ORDER);
+                        foreach ($matches as $anchor) {
+                            $h->addCommit($anchor[2], htmlspecialchars_decode($anchor[1], ENT_QUOTES));
+                        }
+                        $highlights[] = $h;
+                    }
+
+                }
+
                 break;
             }
-        }
+        } while($state !== false && count($nodes) > $i);
 
         return $entry;
     }

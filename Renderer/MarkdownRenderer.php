@@ -44,7 +44,9 @@ class MarkdownRenderer
             $contents[] = $this->formatter->header('開発ハイライト', 2);
 
             foreach ($this->entry->getAllHighlights() as $highlights) {
-                $contents[] = $this->formatter->header(str_replace('branch', 'ブランチ', $highlights->getLabel()), 3);
+                $contents[] = $this->formatter->header(str_replace(array('branch', ' development highlights'), array('ブランチ', '開発ハイライト'), $highlights->getLabel()), 3);
+
+                $contents[] = $this->formatter->link('チェンジログ', $highlights->getChangeLogUri()) . ':';
 
                 $commits = array();
                 foreach ($highlights as $h) {
@@ -56,10 +58,12 @@ class MarkdownRenderer
                 }
 
                 $contents[] = $this->formatter->ulist($commits);
-            }
 
-            if ($this->entry->hasOtherChanges()) {
-                $contents[] = $this->formatter->link('その他多数', $this->entry->getOtherChangesUri());
+                if ($highlights->hasSummaries()) {
+                    foreach ($highlights->getSummaries() as $summary) {
+                        $contents[] = $this->formatter->linkText($summary);
+                    }
+                }
             }
         }
 
